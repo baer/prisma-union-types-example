@@ -6,9 +6,9 @@ Prisma currently doesn't support Union types in the Prisma schema.
 
 ## Why is this a problem?
 
-Well, it depends on where you sit? If you're a Database engineer, you may shrug, but for application, this can be a little bit of an [impedance mismatch](https://en.wikipedia.org/wiki/Impedance_matching). Software applications typically work with denormalized Objects and Types that may be represented differently at the Database level. ORMs exist to translate one to the other, but some translations are much more complicated than others. While it is possible to _represent_ Union types in Prisma, as of this writing, it does not do so automatically.
+Well, it depends on where you sit? If you're a Database engineer, you may shrug, but for application, this can be a little bit of an [impedance mismatch](https://en.wikipedia.org/wiki/Impedance_matching). Software applications typically work with denormalized Objects and Types that may be represented differently at the Database level. ORMs exist to translate one to the other, but some translations are much more complicated than others, and while it is possible to _represent_ Union types in Prisma, as of April 2023, it does not do so automatically.
 
-More concretely, GraphQL and TypeScript allow you to create a Union type, which is useful pretty much any time you need to represent one of several possible types. Two common examples are Error sub-classing and Search results that may need to return different types of content. And as of April 2023, this is not something that Prisma supports.
+More concretely, GraphQL and TypeScript allow you to create a Union type, which is useful pretty much any time you need to represent one of several possible types. Two common examples are Error sub-classing and Search results that may need to return different types of content.
 
 For example, below is a Union type for an `Event` that could be a `Concert`, a `Play`, or a `Conference`.
 
@@ -143,5 +143,41 @@ model Conference {
   eventId Int    @id
   event   Event  @relation(fields: [eventId], references: [id])
   // additional Conference-specific fields
+}
+```
+
+## Using the Prisma Client
+
+NOTE: This section still needs testing and improvements. The code below is provided as a sketch.
+
+```typescript
+import { PrismaClient } from "@prisma/client";
+import type { Event, Concert, Play, Conference } from "./my-types.ts";
+
+const prisma = new PrismaClient();
+
+export async function getEvent(eventId: number): Promise<Event> {
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+    include: {
+      concert: true,
+      play: true,
+      conference: true,
+    },
+  });
+
+  if (!event) {
+    throw new Error("Event not found");
+  }
+
+  if (event.concert) {
+    return { ...event, type: "concert" } as Concert;
+  } else if (event.play) {
+    return { ...event, type: "play" } as Play;
+  } else if (event.conference) {
+    return { ...event, type: "conference" } as Conference;
+  }
+
+  throw new Error("Unknown event type");
 }
 ```
