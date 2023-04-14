@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    // Node 18 config
+    // https://github.com/microsoft/TypeScript/wiki/Node-Target-Mapping
+    "lib": ["ES2022"],
+    "module": "commonjs",
+    "target": "ES2022",
+
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "exactOptionalPropertyTypes": true
+  }
+}

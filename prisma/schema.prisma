@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  // https://neon.tech/docs/guides/prisma-migrate
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model Event {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title       String   @db.VarChar(255)
+  description String
+  startDate   DateTime
+  endDate     DateTime
+
+  // CTI mapping
+  concert    Concert?    @relation("EventToConcert")
+  play       Play?       @relation("EventToPlay")
+  conference Conference? @relation("EventToConference")
+}
+
+model Concert {
+  id     Int    @id @default(autoincrement())
+  artist String
+
+  // CTI mapping
+  eventId Int   @unique
+  event   Event @relation("EventToConcert", fields: [eventId], references: [id])
+}
+
+model Play {
+  id         Int    @id @default(autoincrement())
+  playName   String
+  playwright String
+  director   String
+
+  // CTI mapping
+  eventId Int   @unique
+  event   Event @relation("EventToPlay", fields: [eventId], references: [id])
+}
+
+model Conference {
+  id               Int    @id @default(autoincrement())
+  organizer        String
+  numberOfSpeakers Int
+
+  // CTI mapping
+  eventId Int   @unique
+  event   Event @relation("EventToConference", fields: [eventId], references: [id])
+}

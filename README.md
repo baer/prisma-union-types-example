@@ -165,17 +165,16 @@ model Conference {
 
 ## Using the Prisma Client
 
-NOTE: This section still needs testing and improvements. The code below is provided as a sketch.
-
 ```typescript
-import { PrismaClient } from "@prisma/client";
-import type { Event, Concert, Play, Conference } from "./my-types.ts";
+import { PrismaClient, Concert, Play, Conference } from "@prisma/client";
+
+type Event = Concert | Play | Conference;
 
 const prisma = new PrismaClient();
 
-export async function getEvent(eventId: number): Promise<Event> {
+async function getEvent(id: number): Promise<Event | null> {
   const event = await prisma.event.findUnique({
-    where: { id: eventId },
+    where: { id },
     include: {
       concert: true,
       play: true,
@@ -187,14 +186,17 @@ export async function getEvent(eventId: number): Promise<Event> {
     throw new Error("Event not found");
   }
 
-  if (event.concert) {
-    return { ...event, type: "concert" } as Concert;
-  } else if (event.play) {
-    return { ...event, type: "play" } as Play;
-  } else if (event.conference) {
-    return { ...event, type: "conference" } as Conference;
+  const { concert, play, conference, ...rest } = event;
+  if (concert) {
+    return { ...concert, ...rest } as Concert;
+  } else if (play) {
+    return { ...play, ...rest } as Play;
+  } else if (conference) {
+    return { ...conference, ...rest } as Conference;
   }
 
   throw new Error("Unknown event type");
 }
+
+export { Event, getEvent };
 ```
