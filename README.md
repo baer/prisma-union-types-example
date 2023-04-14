@@ -118,31 +118,48 @@ Here's an example Prisma schema for the Event Union type and each member type (C
 ```prisma
 model Event {
   id        Int      @id @default(autoincrement())
-  name      String
-  startsAt  DateTime
-  endsAt    DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  concert   Concert? @relation(fields: [id], references: [eventId])
-  play      Play?    @relation(fields: [id], references: [eventId])
-  conference Conference? @relation(fields: [id], references: [eventId])
+  title       String   @db.VarChar(255)
+  description String
+  startDate   DateTime
+  endDate     DateTime
+
+  // CTI mapping
+  concert    Concert?    @relation("EventToConcert")
+  play       Play?       @relation("EventToPlay")
+  conference Conference? @relation("EventToConference")
 }
 
 model Concert {
-  eventId Int    @id
-  event   Event  @relation(fields: [eventId], references: [id])
-  // additional Concert-specific fields
+  id     Int    @id @default(autoincrement())
+  artist String
+
+  // CTI mapping
+  eventId Int   @unique
+  event   Event @relation("EventToConcert", fields: [eventId], references: [id])
 }
 
 model Play {
-  eventId Int    @id
-  event   Event  @relation(fields: [eventId], references: [id])
-  // additional Play-specific fields
+  id         Int    @id @default(autoincrement())
+  playName   String
+  playwright String
+  director   String
+
+  // CTI mapping
+  eventId Int   @unique
+  event   Event @relation("EventToPlay", fields: [eventId], references: [id])
 }
 
 model Conference {
-  eventId Int    @id
-  event   Event  @relation(fields: [eventId], references: [id])
-  // additional Conference-specific fields
+  id               Int    @id @default(autoincrement())
+  organizer        String
+  numberOfSpeakers Int
+
+  // CTI mapping
+  eventId Int   @unique
+  event   Event @relation("EventToConference", fields: [eventId], references: [id])
 }
 ```
 
