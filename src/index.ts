@@ -1,11 +1,13 @@
 import { PrismaClient } from "@prisma/client";
-import { getEvent } from "./get-event";
+import { getEvent, getEvents } from "./get-event";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const event = await getEvent(1);
-  console.log(event);
+  // const event = await getEvent(1);
+  const allEvents = await getEvents();
+
+  console.log(allEvents);
 }
 
 main()

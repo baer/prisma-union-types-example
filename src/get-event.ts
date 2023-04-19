@@ -1,23 +1,25 @@
 import { PrismaClient, Concert, Play, Conference } from "@prisma/client";
 
+type DBEvent = {
+  id: number;
+  createdAt: Date;
+  updatedAt: Date;
+
+  title: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
+
+  concert?: Concert | null;
+  play?: Play | null;
+  conference?: Conference | null;
+};
+
 type Event = Concert | Play | Conference;
 
 const prisma = new PrismaClient();
 
-async function getEvent(id: number): Promise<Event | null> {
-  const event = await prisma.event.findUnique({
-    where: { id },
-    include: {
-      concert: true,
-      play: true,
-      conference: true,
-    },
-  });
-
-  if (!event) {
-    throw new Error("Event not found");
-  }
-
+function castEvent(event: DBEvent) {
   // As of April, 2023, it is not possble to collapse data at the DB level
   // using Prisma
   const { concert, play, conference, ...rest } = event;
@@ -32,4 +34,33 @@ async function getEvent(id: number): Promise<Event | null> {
   throw new Error("Unknown event type");
 }
 
-export { Event, getEvent };
+async function getEvent(id: number): Promise<Event | null> {
+  const event: DBEvent | null = await prisma.event.findUnique({
+    where: { id },
+    include: {
+      concert: true,
+      play: true,
+      conference: true,
+    },
+  });
+
+  if (!event) {
+    throw new Error("Event not found");
+  }
+
+  return castEvent(event);
+}
+
+async function getEvents() {
+  const events = await prisma.event.findMany({
+    include: {
+      concert: true,
+      play: true,
+      conference: true,
+    },
+  });
+
+  return events.map(castEvent);
+}
+
+export { Event, getEvent, getEvents };
