@@ -1,11 +1,11 @@
 import { PrismaClient } from "@prisma/client";
-import { findUniqueEvent, findManyEvents } from "./custom-models/event";
+import { findUnique, findMany } from "./custom-models/event";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  // const event = await findUniqueEvent(1);
-  const allEvents = await findManyEvents();
+  // const event = await findUnique(1);
+  const allEvents = await findMany();
 
   console.log(allEvents);
 }

@@ -40,7 +40,7 @@ function castEvent(event: DBEvent) {
   throw new Error("Unknown event type");
 }
 
-async function findUniqueEvent(
+async function findUnique(
   id: number,
   findUniqueArgs?: Prisma.EventFindUniqueArgs
 ): Promise<Event | null> {
@@ -65,7 +65,7 @@ async function findUniqueEvent(
   return castEvent(event);
 }
 
-async function findManyEvents(findManyArgs?: Prisma.EventFindManyArgs) {
+async function findMany(findManyArgs?: Prisma.EventFindManyArgs) {
   const events = await prisma.event.findMany({
     ...findManyArgs,
     include: {
@@ -79,4 +79,4 @@ async function findManyEvents(findManyArgs?: Prisma.EventFindManyArgs) {
   return events.map(castEvent);
 }
 
-export { Event, findUniqueEvent, findManyEvents };
+export { Event, findUnique, findMany };
