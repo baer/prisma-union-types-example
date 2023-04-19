@@ -1,4 +1,10 @@
-import { PrismaClient, Concert, Play, Conference } from "@prisma/client";
+import {
+  Prisma,
+  PrismaClient,
+  Concert,
+  Play,
+  Conference,
+} from "@prisma/client";
 
 type DBEvent = {
   id: number;
@@ -34,10 +40,18 @@ function castEvent(event: DBEvent) {
   throw new Error("Unknown event type");
 }
 
-async function getEvent(id: number): Promise<Event | null> {
+async function findUniqueEvent(
+  id: number,
+  findUniqueArgs?: Prisma.EventFindUniqueArgs
+): Promise<Event | null> {
   const event: DBEvent | null = await prisma.event.findUnique({
-    where: { id },
+    ...findUniqueArgs,
+    where: {
+      ...findUniqueArgs?.where,
+      id,
+    },
     include: {
+      ...findUniqueArgs?.include,
       concert: true,
       play: true,
       conference: true,
@@ -51,9 +65,11 @@ async function getEvent(id: number): Promise<Event | null> {
   return castEvent(event);
 }
 
-async function getEvents() {
+async function findManyEvents(findManyArgs?: Prisma.EventFindManyArgs) {
   const events = await prisma.event.findMany({
+    ...findManyArgs,
     include: {
+      ...findManyArgs?.include,
       concert: true,
       play: true,
       conference: true,
@@ -63,4 +79,4 @@ async function getEvents() {
   return events.map(castEvent);
 }
 
-export { Event, getEvent, getEvents };
+export { Event, findUniqueEvent, findManyEvents };
