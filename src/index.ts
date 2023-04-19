@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { findUniqueEvent, findManyEvents } from "./get-event";
+import { findUniqueEvent, findManyEvents } from "./custom-models/event";
 
 const prisma = new PrismaClient();
 
